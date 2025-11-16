@@ -71,26 +71,36 @@ class Downloader(Requester):
         
         # Allow v.redd.it url formats
         if 'v.redd.it' in self.url:
-            self.url = self.get(
-                                self.url,
+            self.UNQ = self.__last_path_part(self.url)
+            self.page = self.get(
+                                self.url + '/DASHPlaylist.mpd',
                                 _proxies=self.proxies
-                                ).url
-        
-        self.page = self.get(
-                            toJsonUrl(self.url),
-                            _proxies=self.proxies
-                            )
+                                )
+        else: 
+            self.page = self.get(
+                                toJsonUrl(self.url),
+                                _proxies=self.proxies
+                                )
         
         if self.page.status_code == 200:
             return True
         
         raise BaseException('Incorrect URL format')
 
+    def __last_path_part(self, url: str) -> str:
+        # 1 Parse the URL – we only need the path component.
+        path = urlparse(url).path            # → '/1234a/'  or  '/foo/bar/1234a'
+        # 2 Remove a possible trailing slash so that “/1234a/” becomes “/1234a”.
+        path = path.rstrip('/')              # → '/1234a'
+        # 3 Use PurePosixPath to grab the final segment.
+        return PurePosixPath(path).name      # → '1234a'
+        
     def scrape(self):
         """
         Gets direct video and audio (if exists) urls
         """
-        self.UNQ = getUNQ(self.page)
+        if not self.UNQ:
+            self.UNQ = getUNQ(self.page)
 
         if not self.UNQ:
             Clean(self.temp)
@@ -271,4 +281,5 @@ class Downloader(Requester):
         return self.file_name
     
     def clean_temp(self):
+
         Clean(opj(self.path, 'redvid_temp'))
