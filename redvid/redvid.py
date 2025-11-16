@@ -2,6 +2,8 @@ from secrets import token_urlsafe
 from .requestmaker import Requester
 from .tools import *
 from uuid import uuid4
+from urllib.parse import urlparse
+from pathlib import PurePosixPath
 
 __import__('warnings').filterwarnings("ignore")
 
@@ -283,3 +285,4 @@ class Downloader(Requester):
     def clean_temp(self):
 
         Clean(opj(self.path, 'redvid_temp'))
+
